@@ -56,7 +56,7 @@ fn gen_random<F: Fn((u16, u16)) -> bool>(min: u16, max: u16, is_valid: F) -> (u1
     loop {
         let pair = (die.sample(&mut rng), die.sample(&mut rng));
         if !is_valid(pair) {  continue }
-        return pair
+        return pair;
     }
 }
 

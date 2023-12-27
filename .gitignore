@@ -1,6 +1,7 @@
 .*.swp
 tags
 target
+output
 /**/Cargo.lock
 /**/target
 /deployment
