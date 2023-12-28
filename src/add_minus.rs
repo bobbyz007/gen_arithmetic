@@ -20,9 +20,9 @@ pub fn gen_arithmetic(args: &AddMinusOpts) {
         }
 
         if i % args.column_per_page == 0 {
-            lines.push_str("\n\n");
+            lines.push_str("\n");
         } else {
-            lines.push_str("    ");
+            lines.push_str("      ");
         }
     }
     write(&lines.trim_end(), "./output/add-minus.txt").expect("Write error!");

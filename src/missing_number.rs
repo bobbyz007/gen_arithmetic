@@ -9,7 +9,7 @@ impl MissingNumberOpts {
         let mut lines = String::new();
         for _i in 0..self.count {
             lines.push_str(&self.gen_single_missing_numbers());
-            lines.push_str("\n\n\n");
+            lines.push_str("\n\n");
         }
         write(&lines.trim(), "./output/missing-numbers.txt").expect("Write error!");
         println!("Generate missing numbers successfully")
