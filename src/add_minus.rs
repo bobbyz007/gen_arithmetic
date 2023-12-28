@@ -1,8 +1,8 @@
 use rand::distributions::{Distribution, Uniform};
-use crate::AddMinus;
+use crate::AddMinusOpts;
 use crate::read::{write};
 
-pub fn gen_arithmetic(args: &AddMinus) {
+pub fn gen_arithmetic(args: &AddMinusOpts) {
     // let mut line: Vec<String> = vec![];
     let mut lines = String::new();
     let add_only = add_only(args.category);
@@ -25,7 +25,7 @@ pub fn gen_arithmetic(args: &AddMinus) {
             lines.push_str("    ");
         }
     }
-    write(&lines, "./output/output.txt").expect("Write error!");
+    write(&lines, "./output/add-minus.txt").expect("Write error!");
     println!("Generate Add/Minus successfully")
 }
 
@@ -63,11 +63,11 @@ fn gen_random<F: Fn((u16, u16)) -> bool>(min: u16, max: u16, is_valid: F) -> (u1
 #[cfg(test)]
 mod test{
     use crate::add_minus::{gen_add, gen_arithmetic, gen_minus};
-    use crate::AddMinus;
+    use crate::{AddMinusOpts};
 
     #[test]
     fn test_gen_arithmetic() {
-        let args = AddMinus {
+        let args = AddMinusOpts {
             count: 40,
             column_per_page: 2,
             number_min_inclusive: 0,

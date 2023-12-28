@@ -1,6 +1,7 @@
 mod err;
 mod read;
 mod add_minus;
+mod missing_number;
 
 use clap::{Args, Parser, Subcommand};
 use crate::add_minus::gen_arithmetic;
@@ -15,7 +16,7 @@ fn main() {
             gen_arithmetic(add_minus);
         },
         Some(Commands::MissingNumber(missing_number)) => {
-            println!("{:?}", missing_number);
+            missing_number.gen_missing_numbers();
         },
         None => {}
     }
@@ -34,13 +35,13 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     /// 加减法
-    AddMinus(AddMinus),
+    AddMinus(AddMinusOpts),
     /// 补充缺失的数字
-    MissingNumber(MissingNumber),
+    MissingNumber(MissingNumberOpts),
 }
 
 #[derive(Args, Debug)]
-struct AddMinus {
+struct AddMinusOpts {
     // 生成多少个算式，默认40个
     #[arg(short='n', long, default_value_t=40)]
     count: u16,
@@ -67,18 +68,26 @@ struct AddMinus {
 }
 
 #[derive(Args, Debug)]
-struct MissingNumber {
-    // 一个gap包括的最大的缺失数字， 默认3
+struct MissingNumberOpts {
+    // 生成多少个，默认10个
+    #[arg(short='n', long, default_value_t=10)]
+    count: u16,
+
+    // 一个gap包括的最大的缺失个数， 默认3
     #[arg(short, long, default_value_t=3)]
-    miss_max_per_gap: u8,
+    miss_max_per_gap: u16,
 
     // 一行多少个gap，默认2个
     #[arg(short, long, default_value_t=2)]
-    gaps_per_line: u8,
+    gaps_per_line: u16,
 
-    // 一行多少个数字，默认20
-    #[arg(short, long, default_value_t=20)]
-    number_count_per_line: u8,
+    // 递进
+    #[arg(short, long, default_value_t=1)]
+    step: u16,
+
+    // 一行多少个char，默认38
+    #[arg(short='w', long, default_value_t=37)]
+    line_width: u16,
 
     // 参与数的范围最小值，默认是0
     #[arg(short='l', long, default_value_t=0)]
