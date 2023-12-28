@@ -19,13 +19,13 @@ pub fn gen_arithmetic(args: &AddMinusOpts) {
             break;
         }
 
-        if i % args.column_per_page as u16 == 0 {
-            lines.push_str("\n");
+        if i % args.column_per_page == 0 {
+            lines.push_str("\n\n");
         } else {
             lines.push_str("    ");
         }
     }
-    write(&lines, "./output/add-minus.txt").expect("Write error!");
+    write(&lines.trim_end(), "./output/add-minus.txt").expect("Write error!");
     println!("Generate Add/Minus successfully")
 }
 

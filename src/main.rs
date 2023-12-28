@@ -48,7 +48,7 @@ struct AddMinusOpts {
 
     // 每页多少列，默认2列
     #[arg(short='o', long, default_value_t=2)]
-    column_per_page: u8,
+    column_per_page: u16,
 
     // 类别：+： 全部加法， '-': 全部减法， 其他任何: 随机混合加减法
     #[arg(short, long, default_value_t='+')]
