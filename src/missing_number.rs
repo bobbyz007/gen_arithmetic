@@ -43,6 +43,10 @@ impl MissingNumberOpts {
         // numbers中的插入gap的索引位置
         let mut number_pos: u16 = 0;
         let mut miss_numbers = min_numbers + gaps.len() as u16 - 1;
+        if numbers.len() < (miss_numbers as usize) {
+            eprintln!("numbers generated: {:?} with min count: {:?}", numbers, miss_numbers);
+            panic!("The count of numbers generated is too small");
+        }
         // 在数字序列中插入gap
         for gap in gaps {
             // 随机数的范围
