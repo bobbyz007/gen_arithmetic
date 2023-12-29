@@ -1,8 +1,33 @@
 use std::fs;
 use std::fs::File;
 use std::io::{Read, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use docx_rs::{Docx, Paragraph, read_docx, Run, RunFonts};
 use crate::err::Error;
+
+pub fn read_from_docx(filepath: &str) -> Docx {
+    let mut file = File::open(filepath).unwrap();
+    let mut buf = vec![];
+    file.read_to_end(&mut buf).unwrap();
+    read_docx(&buf).unwrap()
+}
+
+pub fn write_to_docx(docx: Docx, filepath: &str) {
+    let path = Path::new(filepath);
+    let output_file = File::create(path).unwrap();
+    let pack_result = docx.build().pack(output_file);
+
+    match pack_result {
+        Ok(_) => println!("Generate missing numbers successfully"),
+        Err(e) => eprintln!("Error: {:?}", e),
+    }
+}
+
+pub fn add_paragraph(docx: Docx, font_size: usize, text: &str) -> Docx {
+    docx.add_paragraph(
+        Paragraph::new().size(font_size)
+            .add_run(Run::new().size(font_size).fonts(RunFonts::new().ascii("Courier New")).add_text(text)))
+}
 
 pub fn create_dir_if_necessary(path: &str) {
     match File::open(PathBuf::from(path)) {
@@ -40,7 +65,7 @@ pub fn write(content: &str, filename: &str) -> Result<(), Error> {
 #[cfg(test)]
 mod test {
     use std::path::PathBuf;
-    use crate::read::read;
+    use crate::utils::read;
 
     #[test]
     fn test_valid_load_csv() {

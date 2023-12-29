@@ -1,48 +1,31 @@
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
-use docx_rs::{Paragraph, read_docx, Run, RunFonts};
 use rand::distributions::{Distribution, Uniform};
 use crate::AddMinusOpts;
-use crate::read::{write};
+use crate::utils::{add_paragraph, read_from_docx, write, write_to_docx};
 
 const FONT_SIZE: usize = 56;
 pub fn gen_arithmetic_to_docx(args: &AddMinusOpts) {
-    let mut file = File::open("./resources/template.docx").unwrap();
-    let mut buf = vec![];
-    file.read_to_end(&mut buf).unwrap();
-    let mut doc = read_docx(&buf).unwrap();
+    let mut doc = read_from_docx("./resources/template.docx");
 
     let add_only = add_only(args.category);
     let minus_only = minus_only(args.category);
     let mut line = String::new();
     for i in 1 ..= args.count {
         // 指定或随机生成加法
-        if add_only || (!minus_only && rand::random()) {
-            line.push_str(&gen_add(args.number_min_inclusive, args.number_max_inclusive));
-        } else {
-            line.push_str(&gen_minus(args.number_min_inclusive, args.number_max_inclusive, args.allow_minus_result));
-        }
+        line.push_str(&gen_arithmetic_expr(add_only, minus_only, args));
 
         if i % args.column_per_page == 0 || i == args.count {
             // write paragraph
-            doc = doc.add_paragraph(Paragraph::new().size(FONT_SIZE).add_run(Run::new().size(FONT_SIZE).fonts(RunFonts::new().ascii("Courier New")).add_text(&line)));
+            doc = add_paragraph(doc, FONT_SIZE, &line);
 
             line.clear();
         } else {
             line.push_str("      ");
         }
     }
-    let path = Path::new("./output/add-minus.docx");
-    let output_file = File::create(path).unwrap();
-    let packResult = doc.build().pack(output_file);
-
-    match packResult {
-        Ok(_) => println!("Generate Add/Minus successfully"),
-        Err(e) => eprintln!("Error: {:?}", e),
-    }
+    write_to_docx(doc, "./output/add-minus.docx");
 }
 
+#[allow(dead_code)]
 pub fn gen_arithmetic_to_txt(args: &AddMinusOpts) {
     // let mut line: Vec<String> = vec![];
     let mut lines = String::new();
@@ -50,11 +33,7 @@ pub fn gen_arithmetic_to_txt(args: &AddMinusOpts) {
     let minus_only = minus_only(args.category);
     for i in 1 ..= args.count {
         // 指定或随机生成加法
-        if add_only || (!minus_only && rand::random()) {
-            lines.push_str(&gen_add(args.number_min_inclusive, args.number_max_inclusive));
-        } else {
-            lines.push_str(&gen_minus(args.number_min_inclusive, args.number_max_inclusive, args.allow_minus_result));
-        }
+        lines.push_str(&gen_arithmetic_expr(add_only, minus_only, args));
 
         if i == args.count {
             break;
@@ -68,6 +47,15 @@ pub fn gen_arithmetic_to_txt(args: &AddMinusOpts) {
     }
     write(&lines.trim_end(), "./output/add-minus.txt").expect("Write error!");
     println!("Generate Add/Minus successfully")
+}
+
+fn gen_arithmetic_expr(add_only: bool, minus_only: bool, args: &AddMinusOpts) -> String {
+    // 指定或随机生成加法
+    if add_only || (!minus_only && rand::random()) {
+        gen_add(args.number_min_inclusive, args.number_max_inclusive)
+    } else {
+        gen_minus(args.number_min_inclusive, args.number_max_inclusive, args.allow_minus_result)
+    }
 }
 
 fn add_only(category: char) -> bool {
@@ -103,7 +91,7 @@ fn gen_random<F: Fn((u16, u16)) -> bool>(min: u16, max: u16, is_valid: F) -> (u1
 
 #[cfg(test)]
 mod test{
-    use crate::add_minus::{gen_add, gen_arithmetic, gen_minus};
+    use crate::add_minus::{gen_add, gen_arithmetic_to_txt, gen_minus};
     use crate::{AddMinusOpts};
 
     #[test]
@@ -116,7 +104,7 @@ mod test{
             allow_minus_result: false,
             category: '+'
         };
-        gen_arithmetic(&args);
+        gen_arithmetic_to_txt(&args);
     }
 
     #[test]

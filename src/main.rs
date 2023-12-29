@@ -1,11 +1,11 @@
 mod err;
-mod read;
+mod utils;
 mod add_minus;
 mod missing_number;
 
 use clap::{Args, Parser, Subcommand};
 use crate::add_minus::{gen_arithmetic_to_docx};
-use crate::read::{create_dir_if_necessary};
+use crate::utils::{create_dir_if_necessary};
 
 fn main() {
     create_dir_if_necessary("./output");

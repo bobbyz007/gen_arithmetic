@@ -1,37 +1,25 @@
 use std::cmp::min;
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
-use docx_rs::{Paragraph, read_docx, Run, RunFonts};
+use docx_rs::{Paragraph};
 use rand::distributions::{Distribution, Uniform};
 use rand::{Rng, thread_rng};
 use crate::MissingNumberOpts;
-use crate::read::write;
+use crate::utils::{add_paragraph, read_from_docx, write, write_to_docx};
 
 const FONT_SIZE: usize = 36;
 impl MissingNumberOpts {
     pub fn gen_missing_numbers_to_docx(&self) {
-        let mut file = File::open("./resources/template.docx").unwrap();
-        let mut buf = vec![];
-        file.read_to_end(&mut buf).unwrap();
-        let mut doc = read_docx(&buf).unwrap();
+        let mut doc = read_from_docx("./resources/template.docx");
 
         for _i in 0..self.count {
             let line = &self.gen_single_missing_numbers();
-            doc = doc.add_paragraph(Paragraph::new().size(FONT_SIZE).add_run(Run::new().size(FONT_SIZE).fonts(RunFonts::new().ascii("Courier New")).add_text(line)));
+            doc = add_paragraph(doc, FONT_SIZE, line);
             doc = doc.add_paragraph(Paragraph::new().size(FONT_SIZE))
         }
 
-        let path = Path::new("./output/missing-numbers.docx");
-        let output_file = File::create(path).unwrap();
-        let packResult = doc.build().pack(output_file);
-
-        match packResult {
-            Ok(_) => println!("Generate missing numbers successfully"),
-            Err(e) => eprintln!("Error: {:?}", e),
-        }
+        write_to_docx(doc, "./output/missing-numbers.docx");
     }
 
+    #[allow(dead_code)]
     pub fn gen_missing_numbers_to_txt(&self) {
         let mut lines = String::new();
         for _i in 0..self.count {
