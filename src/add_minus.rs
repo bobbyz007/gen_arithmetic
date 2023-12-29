@@ -1,5 +1,5 @@
 use rand::distributions::{Distribution, Uniform};
-use crate::{AddMinusOpts, FOR_ROUND_Number};
+use crate::{AddMinusOpts, FOR_ROUND_NUMBER};
 use crate::utils::{add_paragraph, char_len, read_from_docx, write, write_to_docx};
 
 pub fn gen_arithmetic_to_docx(args: &AddMinusOpts) {
@@ -28,15 +28,14 @@ pub fn gen_arithmetic_to_docx(args: &AddMinusOpts) {
 fn gen_arithmetic_expr(args: &AddMinusOpts) -> String {
     let c = &args.category;
     if c.starts_with("+") {
-        gen_add(args.number_min_inclusive, args.number_max_inclusive, FOR_ROUND_Number.get().unwrap())
+        gen_add(args.number_min_inclusive, args.number_max_inclusive, FOR_ROUND_NUMBER.get().unwrap())
     } else if c.starts_with("_") {
-        gen_minus(args.number_min_inclusive, args.number_max_inclusive, args.allow_minus_result, FOR_ROUND_Number.get().unwrap())
+        gen_minus(args.number_min_inclusive, args.number_max_inclusive, args.allow_minus_result, FOR_ROUND_NUMBER.get().unwrap())
     } else /*if c.starts_with("x")*/ {
-        let is_round = c == "x0";
         if rand::random() {
-            gen_add(args.number_min_inclusive, args.number_max_inclusive, FOR_ROUND_Number.get().unwrap())
+            gen_add(args.number_min_inclusive, args.number_max_inclusive, FOR_ROUND_NUMBER.get().unwrap())
         } else {
-            gen_minus(args.number_min_inclusive, args.number_max_inclusive, args.allow_minus_result, FOR_ROUND_Number.get().unwrap())
+            gen_minus(args.number_min_inclusive, args.number_max_inclusive, args.allow_minus_result, FOR_ROUND_NUMBER.get().unwrap())
         }
     }
 }
