@@ -3,46 +3,38 @@ use docx_rs::{Paragraph};
 use rand::distributions::{Distribution, Uniform};
 use rand::{Rng, thread_rng};
 use crate::MissingNumberOpts;
-use crate::utils::{add_paragraph, read_from_docx, write, write_to_docx};
+use crate::utils::{add_paragraph, char_len, read_from_docx, write, write_to_docx};
 
-const FONT_SIZE: usize = 36;
 impl MissingNumberOpts {
     pub fn gen_missing_numbers_to_docx(&self) {
         let mut doc = read_from_docx("./resources/template.docx");
 
         for _i in 0..self.count {
             let line = &self.gen_single_missing_numbers();
-            doc = add_paragraph(doc, FONT_SIZE, line);
-            doc = doc.add_paragraph(Paragraph::new().size(FONT_SIZE))
+            let font_size = self.output_docx_font_size as usize;
+            doc = add_paragraph(doc, font_size, line);
+            doc = doc.add_paragraph(Paragraph::new().size(font_size))
         }
 
         write_to_docx(doc, "./output/missing-numbers.docx");
     }
 
-    #[allow(dead_code)]
-    pub fn gen_missing_numbers_to_txt(&self) {
-        let mut lines = String::new();
-        for _i in 0..self.count {
-            lines.push_str(&self.gen_single_missing_numbers());
-            lines.push_str("\n");
-        }
-        write(&lines.trim(), "./output/missing-numbers.txt").expect("Write error!");
-        println!("Generate missing numbers successfully");
-    }
-
     fn gen_single_missing_numbers(&self) -> String {
         let mut gaps = vec![];
         self.gen_gaps(&mut gaps);
-        let min_numbers = gaps.iter().fold(0, |acc, &x| acc + x);
+        // 所有的gap对应的number数量
+        let all_gap_numbers = gaps.iter().fold(0, |acc, &x| acc + x);
+        // 满足能插入所有gap 所需要的最少number数量（每个gap至少间隔一个数字）
+        let min_numbers = all_gap_numbers + gaps.len() as u16 - 1;
 
         // 生成数字
         let mut numbers: Vec<u16> = vec![];
-        self.gen_numbers(&mut numbers, min_numbers + gaps.len() as u16 - 1);
+        self.gen_numbers(&mut numbers, min_numbers);
 
         let mut line = String::new();
         // numbers中的插入gap的索引位置
         let mut number_pos: u16 = 0;
-        let mut miss_numbers = min_numbers + gaps.len() as u16 - 1;
+        let mut miss_numbers = min_numbers;
         if numbers.len() < (miss_numbers as usize) {
             eprintln!("numbers generated: {:?} with min count: {:?}", numbers, miss_numbers);
             panic!("The count of numbers generated is too small");
@@ -124,18 +116,16 @@ impl MissingNumberOpts {
             gaps.push(die.sample(&mut rng));
         }
     }
-}
 
-// 数字长度， 也可以转换为string再计算， 但性能更差
-fn char_len(mut number: u16) -> u16 {
-    let mut len = 0;
-    if number == 0 {
-        len = 1;
+    #[allow(dead_code)]
+    fn gen_missing_numbers_to_txt(&self) {
+        let mut lines = String::new();
+        for _i in 0..self.count {
+            lines.push_str(&self.gen_single_missing_numbers());
+            lines.push_str("\n");
+        }
+        write(&lines.trim(), "./output/missing-numbers.txt").expect("Write error!");
+        println!("Generate missing numbers successfully");
     }
-    while number != 0 {
-        len += 1;
-        number /= 10;
-    }
-    len
 }
 

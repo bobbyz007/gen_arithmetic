@@ -50,9 +50,14 @@ struct AddMinusOpts {
     #[arg(short='o', long, default_value_t=2)]
     column_per_page: u16,
 
-    // 类别：+： 全部加法， '-': 全部减法， 其他任何: 随机混合加减法
-    #[arg(short, long, default_value_t='+')]
-    category: char,
+    // 类别有如下
+    // +： 全部加法，
+    // +0： 整十加法
+    // _: 全部减法， - 与命令行符号冲突，选择_
+    // _0: 整十减法
+    // 其他任何: 随机混合加减法
+    #[arg(short, long, )]
+    category: String,
 
     // 参与运算的数的范围最小值，默认是0
     #[arg(short='l', long, default_value_t=0)]
@@ -65,6 +70,10 @@ struct AddMinusOpts {
     // 允许负数结果，默认 false
     #[arg(short, long, default_value_t=false)]
     allow_minus_result: bool,
+
+    // 写入到docx中的字体大小
+    #[arg(short='f', long, default_value_t = 56)]
+    output_docx_font_size: u16,
 }
 
 #[derive(Args, Debug)]
@@ -97,5 +106,8 @@ struct MissingNumberOpts {
     #[arg(short='r', long, default_value_t=100)]
     number_max_inclusive: u16,
 
+    // 写入到docx中的字体大小，需要与 line_width 配合，字体太大，则line_width需减少，否则一行容纳不下
+    #[arg(short='f', long, default_value_t = 36)]
+    output_docx_font_size: u16,
 }
 

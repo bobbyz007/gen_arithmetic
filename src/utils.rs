@@ -60,17 +60,42 @@ pub fn write(content: &str, filename: &str) -> Result<(), Error> {
     Ok(())
 }
 
+// 数字长度， 也可以转换为string再计算， 但性能更差
+pub fn char_len(mut number: u16) -> u16 {
+    let mut len = 0;
+    if number == 0 {
+        len = 1;
+    }
+    while number != 0 {
+        len += 1;
+        number /= 10;
+    }
+    len
+}
+
 // 单元测试
 // 条件编译：只有执行cargo test时才编译下面的模块
 #[cfg(test)]
 mod test {
     use std::path::PathBuf;
-    use crate::utils::read;
+    use crate::utils::{char_len, read};
 
     #[test]
     fn test_valid_load_csv() {
         let filename = PathBuf::from("./output/output.txt");
         let csv_data = read(filename);
         assert!(csv_data.is_ok());
+    }
+
+    #[test]
+    fn test_char_len() {
+        assert_eq!(2, char_len(23));
+        assert_eq!(1, char_len(0));
+        assert_eq!(1, char_len(1));
+        assert_eq!(1, char_len(9));
+        assert_eq!(2, char_len(10));
+        assert_eq!(2, char_len(99));
+        assert_eq!(3, char_len(100));
+        assert_eq!(5, char_len(10000));
     }
 }
