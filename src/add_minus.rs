@@ -1,8 +1,49 @@
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
+use docx_rs::{Paragraph, read_docx, Run, RunFonts};
 use rand::distributions::{Distribution, Uniform};
 use crate::AddMinusOpts;
 use crate::read::{write};
 
-pub fn gen_arithmetic(args: &AddMinusOpts) {
+const FONT_SIZE: usize = 56;
+pub fn gen_arithmetic_to_docx(args: &AddMinusOpts) {
+    let mut file = File::open("./resources/template.docx").unwrap();
+    let mut buf = vec![];
+    file.read_to_end(&mut buf).unwrap();
+    let mut doc = read_docx(&buf).unwrap();
+
+    let add_only = add_only(args.category);
+    let minus_only = minus_only(args.category);
+    let mut line = String::new();
+    for i in 1 ..= args.count {
+        // 指定或随机生成加法
+        if add_only || (!minus_only && rand::random()) {
+            line.push_str(&gen_add(args.number_min_inclusive, args.number_max_inclusive));
+        } else {
+            line.push_str(&gen_minus(args.number_min_inclusive, args.number_max_inclusive, args.allow_minus_result));
+        }
+
+        if i % args.column_per_page == 0 || i == args.count {
+            // write paragraph
+            doc = doc.add_paragraph(Paragraph::new().size(FONT_SIZE).add_run(Run::new().size(FONT_SIZE).fonts(RunFonts::new().ascii("Courier New")).add_text(&line)));
+
+            line.clear();
+        } else {
+            line.push_str("      ");
+        }
+    }
+    let path = Path::new("./output/add-minus.docx");
+    let output_file = File::create(path).unwrap();
+    let packResult = doc.build().pack(output_file);
+
+    match packResult {
+        Ok(_) => println!("Generate Add/Minus successfully"),
+        Err(e) => eprintln!("Error: {:?}", e),
+    }
+}
+
+pub fn gen_arithmetic_to_txt(args: &AddMinusOpts) {
     // let mut line: Vec<String> = vec![];
     let mut lines = String::new();
     let add_only = add_only(args.category);

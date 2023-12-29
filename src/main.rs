@@ -4,7 +4,7 @@ mod add_minus;
 mod missing_number;
 
 use clap::{Args, Parser, Subcommand};
-use crate::add_minus::gen_arithmetic;
+use crate::add_minus::{gen_arithmetic_to_docx};
 use crate::read::{create_dir_if_necessary};
 
 fn main() {
@@ -13,10 +13,10 @@ fn main() {
     let cli = Cli::parse();
     match &cli.command {
         Some(Commands::AddMinus(add_minus)) => {
-            gen_arithmetic(add_minus);
+            gen_arithmetic_to_docx(add_minus);
         },
         Some(Commands::MissingNumber(missing_number)) => {
-            missing_number.gen_missing_numbers();
+            missing_number.gen_missing_numbers_to_docx();
         },
         None => {}
     }
