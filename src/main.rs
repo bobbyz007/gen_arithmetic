@@ -3,9 +3,13 @@ mod utils;
 mod add_minus;
 mod missing_number;
 
+use std::sync::OnceLock;
 use clap::{Args, Parser, Subcommand};
 use crate::add_minus::{gen_arithmetic_to_docx};
 use crate::utils::{create_dir_if_necessary};
+
+// 全局初始化一次的变量
+static FOR_ROUND_Number: OnceLock<bool> = OnceLock::new();
 
 fn main() {
     create_dir_if_necessary("./output");
@@ -13,6 +17,9 @@ fn main() {
     let cli = Cli::parse();
     match &cli.command {
         Some(Commands::AddMinus(add_minus)) => {
+            FOR_ROUND_Number.get_or_init(|| {
+                add_minus.category.ends_with("0")
+            });
             gen_arithmetic_to_docx(add_minus);
         },
         Some(Commands::MissingNumber(missing_number)) => {

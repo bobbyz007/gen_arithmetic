@@ -1,5 +1,5 @@
 use rand::distributions::{Distribution, Uniform};
-use crate::AddMinusOpts;
+use crate::{AddMinusOpts, FOR_ROUND_Number};
 use crate::utils::{add_paragraph, char_len, read_from_docx, write, write_to_docx};
 
 pub fn gen_arithmetic_to_docx(args: &AddMinusOpts) {
@@ -28,22 +28,22 @@ pub fn gen_arithmetic_to_docx(args: &AddMinusOpts) {
 fn gen_arithmetic_expr(args: &AddMinusOpts) -> String {
     let c = &args.category;
     if c.starts_with("+") {
-        gen_add(args.number_min_inclusive, args.number_max_inclusive, c == "+0")
+        gen_add(args.number_min_inclusive, args.number_max_inclusive, FOR_ROUND_Number.get().unwrap())
     } else if c.starts_with("_") {
-        gen_minus(args.number_min_inclusive, args.number_max_inclusive, args.allow_minus_result, c == "_0")
+        gen_minus(args.number_min_inclusive, args.number_max_inclusive, args.allow_minus_result, FOR_ROUND_Number.get().unwrap())
     } else /*if c.starts_with("x")*/ {
         let is_round = c == "x0";
         if rand::random() {
-            gen_add(args.number_min_inclusive, args.number_max_inclusive, is_round)
+            gen_add(args.number_min_inclusive, args.number_max_inclusive, FOR_ROUND_Number.get().unwrap())
         } else {
-            gen_minus(args.number_min_inclusive, args.number_max_inclusive, args.allow_minus_result, is_round)
+            gen_minus(args.number_min_inclusive, args.number_max_inclusive, args.allow_minus_result, FOR_ROUND_Number.get().unwrap())
         }
     }
 }
 
-fn gen_add(min: u16, max: u16, is_round: bool) -> String {
+fn gen_add(min: u16, max: u16, is_round: &bool) -> String {
     let is_valid = |_| true;
-    let pair = if is_round {
+    let pair = if *is_round {
         let origin = gen_random(min / 10, max / 10, is_valid);
         (origin.0 * 10, origin.1 * 10)
     } else {
@@ -58,14 +58,14 @@ fn gen_add(min: u16, max: u16, is_round: bool) -> String {
         format!("{:>3} + {:<3}=", pair.0, pair.1)
     }
 }
-fn gen_minus(min: u16, max: u16, allow_result_minus: bool, is_round: bool) -> String {
+fn gen_minus(min: u16, max: u16, allow_result_minus: bool, is_round: &bool) -> String {
     let is_valid = |p: (u16, u16)| {
         if !allow_result_minus {
             return p.0 >= p.1;
         }
         true
     };
-    let pair = if is_round {
+    let pair = if *is_round {
         let origin = gen_random(min / 10, max / 10, is_valid);
         (origin.0 * 10, origin.1 * 10)
     } else {
@@ -134,16 +134,16 @@ mod test{
 
     #[test]
     fn test_gen_add() {
-        let s = gen_add(0, 50, false);
+        let s = gen_add(0, 50, &false);
         println!("{:?}", s);
-        let s = gen_minus(0, 50, true, false);
+        let s = gen_minus(0, 50, true, &false);
         println!("{:?}", s);
-        let s = gen_minus(0, 50, false, false);
+        let s = gen_minus(0, 50, false, &false);
         println!("{:?}", s);
 
-        let s = gen_minus(0, 10, true, false);
+        let s = gen_minus(0, 10, true, &false);
         println!("{:?}", s);
-        let s = gen_minus(0, 10, false, false);
+        let s = gen_minus(0, 10, false, &false);
         println!("{:?}", s);
     }
 }
