@@ -1,4 +1,4 @@
-use std::cmp::min;
+use std::cmp::{max, min};
 use docx_rs::{Paragraph};
 use rand::distributions::{Distribution, Uniform};
 use rand::{Rng, thread_rng};
@@ -78,39 +78,88 @@ impl MissingNumberOpts {
 
     // 根据行宽，确定数字序列
     fn gen_numbers(&self, numbers: &mut Vec<u16>, min_numbers: u16) {
-        let mut upper_bound: u16 = self.number_max_inclusive - min_numbers * self.step;
-
-        let mut number = self.number_max_inclusive;
-        let mut width = char_len(number);
-        while width <= self.line_width {
-            number -= self.step;
-            // 数字和间隔空格的宽度
-            width += char_len(number) + 1;
-        }
-        // 既满足step要求， 又满足line width的要求
-        upper_bound = min(upper_bound, number);
-        if upper_bound < self.number_min_inclusive {
-            panic!("Please shorten step or increase line width");
-        }
-
-        let mut rng = rand::thread_rng();
-        let die = Uniform::from(self.number_min_inclusive..upper_bound);
-        // 从start开始满足gap要求，每个gap都至少间隔了一个数字，而且line width不会超过数字范围
-        let start = die.sample(&mut rng);
-
         // 从start开始截取不会超过line width的数字
-        number = start;
-        width = char_len(number);
+        let mut number = self.gen_num_start(min_numbers);
+        let mut width = char_len(number);
+        let step = i16::unsigned_abs(self.step);
         while width <= self.line_width {
             numbers.push(number);
-            number += self.step;
+            number = if self.step > 0 {
+                number + step
+            } else {
+                if number < step {
+                    break;
+                }
+                number - step
+            };
             width += 1 + char_len(number); //空格间隔
         }
     }
 
+    fn gen_num_start(&self, min_numbers: u16) -> u16 {
+        let (mut lower_bound, mut upper_bound) = (self.number_min_inclusive, self.number_max_inclusive);
+        let step = i16::unsigned_abs(self.step);
+        if self.step > 0 {
+            upper_bound = self.number_max_inclusive - min_numbers * step;
+
+            let mut number = self.number_max_inclusive;
+            let mut width = char_len(number);
+            while width <= self.line_width {
+                if number < step {
+                    break;
+                }
+                number -= step;
+                // 数字和间隔空格的宽度
+                width += char_len(number) + 1;
+            }
+            number += step;
+            // 既满足step要求， 又满足line width的要求
+            upper_bound = min(upper_bound, number);
+            if upper_bound < self.number_min_inclusive {
+                panic!("Please shorten step or increase line width");
+            }
+        } else {
+            lower_bound = self.number_min_inclusive + min_numbers * step;
+
+            let mut number = self.number_min_inclusive;
+            let mut width = char_len(number);
+            while width <= self.line_width {
+                number += step;
+                // 数字和间隔空格的宽度
+                width += char_len(number) + 1;
+            }
+            number -= step;
+            // 既满足step要求， 又满足line width的要求
+            lower_bound = max(lower_bound, number);
+
+            // 上限只是一个参考值，允许超过上限
+        }
+
+        let mut rng = rand::thread_rng();
+        upper_bound = if lower_bound == upper_bound { upper_bound + 1} else { upper_bound };
+        let die = Uniform::from(lower_bound..upper_bound);
+        // 从start开始满足gap要求，每个gap都至少间隔了一个数字，而且line width不会超过数字范围
+        let mut start = die.sample(&mut rng);
+        if self.start_as_multiple_step {
+            if start % step == 0 {
+                return start;
+            } else {
+                let mut times = start / step;
+                let r = start % step;
+                times = if r > step / 2 { times + 1 } else { times };
+                start = times * step;
+                // 如果超过下限，则直接向上
+                if start < self.number_min_inclusive {
+                    start = (times + 1) * step;
+                }
+            }
+        }
+        start
+    }
+
     // 随机产生每个gap有多少个位置（数字）
     fn gen_gaps(&self, gaps: &mut Vec<u16>) {
-        let mut rng = rand::thread_rng();
+        let mut rng = thread_rng();
         let die = Uniform::from(1..self.miss_max_per_gap + 1);
         for _ in 0..self.gaps_per_line {
             gaps.push(die.sample(&mut rng));

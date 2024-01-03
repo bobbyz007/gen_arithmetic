@@ -58,12 +58,12 @@ struct AddMinusOpts {
     column_per_page: u16,
 
     // 类别有如下
-    // +： 全部加法，
+    // +： 全部加法
     // +0： 整十加法
-    // _: 全部减法， - 与命令行符号冲突，选择_
-    // _0: 整十减法
+    // -: 全部减法
+    // -0: 整十减法
     // 其他任何: 随机混合加减法
-    #[arg(short, long, )]
+    #[arg(short, long, allow_hyphen_values=true)]
     category: String,
 
     // 参与运算的数的范围最小值，默认是0
@@ -98,10 +98,14 @@ struct MissingNumberOpts {
     gaps_per_line: u16,
 
     // 递进
-    #[arg(short, long, default_value_t=1)]
-    step: u16,
+    #[arg(short, long, allow_negative_numbers=true, default_value_t=1)]
+    step: i16,
 
-    // 一行多少个char，默认38
+    // 随机产生数据起始是step的倍数，比如step是5， 则10,15,20符合, 11, 16, 21不符合，因为11不是5的倍数
+    #[arg(short='t', long, default_value_t=false)]
+    start_as_multiple_step: bool,
+
+    // 一行多少个char，默认37
     #[arg(short='w', long, default_value_t=37)]
     line_width: u16,
 
@@ -109,7 +113,7 @@ struct MissingNumberOpts {
     #[arg(short='l', long, default_value_t=0)]
     number_min_inclusive: u16,
 
-    // 参与数的范围最大值
+    // 参与数的范围最大值，此处只是一个参考值，允许略微超过此上限
     #[arg(short='r', long, default_value_t=100)]
     number_max_inclusive: u16,
 
