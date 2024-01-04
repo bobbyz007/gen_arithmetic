@@ -165,7 +165,6 @@ fn gen_operands<F: Fn((u16, u16)) -> bool>(args: &ParsedArgs, op: Op, is_valid: 
             }
         }
 
-        // let pair = (die.sample(&mut rng), die.sample(&mut rng));
         if !is_valid((l, r)) {  continue }
         return (l, r);
     }
