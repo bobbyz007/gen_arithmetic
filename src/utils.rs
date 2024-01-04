@@ -1,6 +1,7 @@
 use std::fs;
 use std::fs::File;
 use std::io::{Read, Write};
+use std::ops::Range;
 use std::path::{Path, PathBuf};
 use docx_rs::{Docx, Paragraph, read_docx, Run, RunFonts};
 use crate::err::Error;
@@ -73,12 +74,36 @@ pub fn char_len(mut number: u16) -> u16 {
     len
 }
 
+// number转换为最近的 multiple 的倍数
+pub fn round_to(number: u16, multiple: u16, range: &Range<u16>) -> u16 {
+    let mut times = number / multiple;
+    let r = number % multiple;
+    times = if r > multiple / 2 { times + 1 } else { times };
+    let mut ans = times * multiple;
+    if ans >= range.end {
+        ans = (times - 1) * multiple;
+    }
+    if ans < range.start {
+        ans = (times + 1) * multiple;
+    }
+    ans
+}
+
 // 单元测试
 // 条件编译：只有执行cargo test时才编译下面的模块
 #[cfg(test)]
 mod test {
     use std::path::PathBuf;
-    use crate::utils::{char_len, read};
+    use crate::utils::{char_len, read, round_to};
+
+    #[test]
+    fn test_round_to() {
+        assert_eq!(round_to(19, 5), 20);
+        assert_eq!(round_to(18, 5), 20);
+        assert_eq!(round_to(17, 5), 15);
+        assert_eq!(round_to(16, 5), 15);
+        assert_eq!(round_to(15, 5), 15);
+    }
 
     #[test]
     fn test_valid_load_csv() {

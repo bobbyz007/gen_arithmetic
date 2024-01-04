@@ -3,23 +3,20 @@ mod utils;
 mod add_minus;
 mod missing_number;
 
-use std::sync::OnceLock;
+use std::ops::Range;
 use clap::{Args, Parser, Subcommand};
 use crate::add_minus::{gen_arithmetic_to_docx};
 use crate::utils::{create_dir_if_necessary};
 
 // 全局初始化一次的变量
-static FOR_ROUND_NUMBER: OnceLock<bool> = OnceLock::new();
+// static OPERAND_PATTERN: OnceLock<&str> = OnceLock::new();
 
 fn main() {
-    create_dir_if_necessary("./output");
+    init();
 
     let cli = Cli::parse();
     match &cli.command {
         Some(Commands::AddMinus(add_minus)) => {
-            FOR_ROUND_NUMBER.get_or_init(|| {
-                add_minus.category.ends_with("0")
-            });
             gen_arithmetic_to_docx(add_minus);
         },
         Some(Commands::MissingNumber(missing_number)) => {
@@ -27,6 +24,10 @@ fn main() {
         },
         None => {}
     }
+}
+
+fn init() {
+    create_dir_if_necessary("./output");
 }
 
 // 利用clap处理命令行参数
@@ -59,28 +60,62 @@ struct AddMinusOpts {
 
     // 类别有如下
     // +： 全部加法
-    // +0： 整十加法
     // -: 全部减法
-    // -0: 整十减法
-    // 其他任何: 随机混合加减法
+    // x: 随机混合
+    // TODO 其他运算
     #[arg(short, long, allow_hyphen_values=true)]
-    category: String,
+    category: char,
+
+    // 左/右操作数可以指定如下模式：
+    // 受-l, -r参数约束：*表示范围内的任意数，C*表示数字是C的倍数。
+    // 不受-l, -r参数约束：C~D表示[C,D]范围内的任意数，C表示指定的常数。 这两种相当于常数指定
+
+    // L, R分别表示左右操作数
+    // 1. L,R
+    // 2. L  ：实际是L,L的简化，表示左右操作数相同
+    // 3. =A 表示满足运算结果为A，此处A仅支持指定常数
+
+    // 举例：
+    // 10,*: 左操作数固定为10， 右操作数是范围内的任意随机数
+    // 10*,5*：左操作数是10的倍数， 右操作数是5的倍数
+    // *：左右操作数相同，是范围内的任意随机数
+    // 5*：左右操作数相同，是5的倍数
+    // =10：满足运算结果等于10
+    #[arg(short='p', long, allow_hyphen_values=true, default_value="*,*")]
+    operand_pattern: String,
 
     // 参与运算的数的范围最小值，默认是0
     #[arg(short='l', long, default_value_t=0)]
     number_min_inclusive: u16,
 
     // 参与运算的数的范围最大值
-    #[arg(short='r', long, default_value_t = 10)]
+    #[arg(short='r', long, default_value_t=10)]
     number_max_inclusive: u16,
 
-    // 允许负数结果，默认 false
-    #[arg(short, long, default_value_t=false)]
-    allow_minus_result: bool,
+    // 允许的运算结果最小值，默认是0
+    #[arg(short='b', long, default_value_t=0)]
+    result_min_inclusive: i16,
+
+    // 允许的运算结果最大值，默认是99
+    #[arg(short='e', long, default_value_t = 99)]
+    result_max_inclusive: i16,
 
     // 写入到docx中的字体大小
     #[arg(short='f', long, default_value_t = 56)]
     output_docx_font_size: u16,
+}
+
+// 操作数配置
+enum OperandConfig {
+    TwoOperand(OperandPattern, OperandPattern), // L,R
+    OneOperand(OperandPattern), // L，是L,L简化
+    Result(u16) // =A
+}
+enum OperandPattern {
+    Wildcard,
+    NumberWildcard(u16),
+    Constant(u16),
+    ConstantRange(Range<u16>)
 }
 
 #[derive(Args, Debug)]
