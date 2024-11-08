@@ -8,23 +8,23 @@
 # 生成200个题目， 生成加法(-c +指定)，数据范围是[0,99]
 gen_arithmatic add-minus -n 200 -c + -r 99
 
-# 生成200个题目， 生成整十的加法(-c +0指定)，数据范围是[0,99]
-gen_arithmatic add-minus -n 200 -c +0 -r 99
+# 生成200个题目， 生成整十的加法(-c -p指定)，数据范围是[0,99]
+gen_arithmatic add-minus -n 200 -c + -p 10*,10* -r 99
 
-# 生成200个题目， 生成整十的加法(-c +0指定)，数据范围是[80,99]
-gen_arithmatic add-minus -n 200 -c +0 -l 80 -r 99
+# 生成200个题目， 生成整十的加法(-c -p指定)，数据范围是[8,99], -e指定最大运算结果不超过100
+gen_arithmatic add-minus -n 200 -c + -p 10*,10* -l 8 -r 99 -e 100
 
-# 生成200个题目， 生成整十的减法(-c -0指定)，数据范围是[80,99]
-gen_arithmatic add-minus -n 200 -c -0 -l 80 -r 99
+# 生成200个题目， 生成整十的减法(-c -p指定)，数据范围是[8,99]
+gen_arithmatic add-minus -n 200 -c - -p 10*,10* -l 8 -r 99
 
-# 生成200个题目， 生成减法(-c -指定)，数据范围是[80,99]
-gen_arithmatic add-minus -n 200 -c - -l 80 -r 99
+# 生成200个题目， 生成减法(-c -指定)，数据范围是[8,99]
+gen_arithmatic add-minus -n 200 -c - -l 8 -r 99
 
-# 生成200个题目， 生成加减法随机混合(-c x指定)，数据范围是[80,99]
-gen_arithmatic add-minus -n 200 -c x -l 80 -r 99
+# 生成200个题目， 生成加减法随机混合(-c x指定)，数据范围是[8,99]
+gen_arithmatic add-minus -n 200 -c x -l 8 -r 99
 
-# 生成200个题目， 生成整十的加减法随机混合(-c x0指定)，数据范围是[80,99]
-gen_arithmatic add-minus -n 200 -c +0 -l 80 -r 99
+# 生成200个题目， 生成整十的加减法随机混合(-c x0指定)，数据范围是[8,99]
+gen_arithmatic add-minus -n 200 -c x -p 10*,10* -l 8 -r 99
 ```
 
 ## missing number
