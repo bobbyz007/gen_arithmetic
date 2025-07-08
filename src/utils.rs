@@ -19,7 +19,7 @@ pub fn write_to_docx(docx: Docx, filepath: &str) {
     let pack_result = docx.build().pack(output_file);
 
     match pack_result {
-        Ok(_) => println!("Generate missing numbers successfully"),
+        Ok(_) => println!("Generate docs successfully"),
         Err(e) => eprintln!("Error: {:?}", e),
     }
 }
@@ -93,16 +93,17 @@ pub fn round_to(number: u16, multiple: u16, range: &Range<u16>) -> u16 {
 // 条件编译：只有执行cargo test时才编译下面的模块
 #[cfg(test)]
 mod test {
+    use std::ops::Range;
     use std::path::PathBuf;
     use crate::utils::{char_len, read, round_to};
 
     #[test]
     fn test_round_to() {
-        assert_eq!(round_to(19, 5), 20);
-        assert_eq!(round_to(18, 5), 20);
-        assert_eq!(round_to(17, 5), 15);
-        assert_eq!(round_to(16, 5), 15);
-        assert_eq!(round_to(15, 5), 15);
+        assert_eq!(round_to(19, 5, &(1u16..100u16)), 20);
+        assert_eq!(round_to(18, 5, &(1u16..100u16)), 20);
+        assert_eq!(round_to(17, 5, &(1u16..100u16)), 15);
+        assert_eq!(round_to(16, 5, &(1u16..100u16)), 15);
+        assert_eq!(round_to(15, 5, &(1u16..100u16)), 15);
     }
 
     #[test]

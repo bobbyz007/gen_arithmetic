@@ -5,7 +5,7 @@ mod missing_number;
 
 use std::ops::Range;
 use clap::{Args, Parser, Subcommand};
-use crate::add_minus::{gen_arithmetic_to_docx};
+use crate::add_minus::{gen_arithmetic_to_docx, gen_arithmetic_to_docx_by_pattern1, gen_arithmetic_to_docx_by_pattern2, gen_arithmetic_to_docx_by_pattern3, gen_arithmetic_to_docx_by_pattern4};
 use crate::utils::{create_dir_if_necessary};
 
 // 全局初始化一次的变量
@@ -17,7 +17,21 @@ fn main() {
     let cli = Cli::parse();
     match &cli.command {
         Some(Commands::AddMinus(add_minus)) => {
-            gen_arithmetic_to_docx(add_minus);
+            if add_minus.category.ends_with("p1") {
+                // p1: add(result [6, 16])
+                gen_arithmetic_to_docx_by_pattern1(add_minus)
+            } else if add_minus.category.ends_with("p2") {
+                // p2: minus(start with 8, 10, 15~18)
+                gen_arithmetic_to_docx_by_pattern2(add_minus)
+            } else if add_minus.category.ends_with("p3") {
+                // p3: minus(start with 11~14)
+                gen_arithmetic_to_docx_by_pattern3(add_minus)
+            } else if add_minus.category.ends_with("p4") {
+                // p4: minus(start with 4~9)
+                gen_arithmetic_to_docx_by_pattern4(add_minus)
+            } else {
+                gen_arithmetic_to_docx(add_minus);
+            }
         },
         Some(Commands::MissingNumber(missing_number)) => {
             missing_number.gen_missing_numbers_to_docx();
@@ -59,12 +73,14 @@ struct AddMinusOpts {
     column_per_page: u16,
 
     // 类别有如下
-    // +： 全部加法
-    // -: 全部减法
-    // x: 随机混合
-    // TODO 其他运算
-    #[arg(short, long, allow_hyphen_values=true)]
-    category: char,
+    // +： 全部加法，
+    // +0： 整十加法
+    // _: 全部减法， - 与命令行符号冲突，选择_
+    // _0: 整十减法
+    // 其他任何: 随机混合加减法
+    // p1: 定制的模式
+    #[arg(short, long, )]
+    category: String,
 
     // 左/右操作数可以指定如下模式：
     // 受-l, -r参数约束：*表示范围内的任意数，C*表示数字是C的倍数。

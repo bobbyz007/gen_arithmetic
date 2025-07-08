@@ -1,7 +1,7 @@
 use std::cmp::{max, min};
 use docx_rs::{Paragraph};
-use rand::distributions::{Distribution, Uniform};
-use rand::{Rng, thread_rng};
+use rand::{rng, Rng};
+use rand::distr::Uniform;
 use crate::MissingNumberOpts;
 use crate::utils::{add_paragraph, char_len, read_from_docx, write, write_to_docx};
 
@@ -43,7 +43,7 @@ impl MissingNumberOpts {
         for gap in gaps {
             // 随机数的范围
             let upper_bound = numbers.len() as u16 - miss_numbers + 1;
-            let gap_start = thread_rng().gen_range(number_pos..upper_bound);
+            let gap_start = rng().random_range(number_pos..upper_bound);
 
             // 填入数字
             for i in number_pos..gap_start {
@@ -135,11 +135,11 @@ impl MissingNumberOpts {
             // 上限只是一个参考值，允许超过上限
         }
 
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         upper_bound = if lower_bound == upper_bound { upper_bound + 1} else { upper_bound };
-        let die = Uniform::from(lower_bound..upper_bound);
+        let die = Uniform::new(lower_bound, upper_bound).unwrap();
         // 从start开始满足gap要求，每个gap都至少间隔了一个数字，而且line width不会超过数字范围
-        let mut start = die.sample(&mut rng);
+        let mut start = rng.sample(die);
         if self.start_as_multiple_step {
             if start % step == 0 {
                 return start;
@@ -159,10 +159,10 @@ impl MissingNumberOpts {
 
     // 随机产生每个gap有多少个位置（数字）
     fn gen_gaps(&self, gaps: &mut Vec<u16>) {
-        let mut rng = thread_rng();
-        let die = Uniform::from(1..self.miss_max_per_gap + 1);
+        let mut rng = rng();
+        let die = Uniform::new(1, self.miss_max_per_gap + 1).unwrap();
         for _ in 0..self.gaps_per_line {
-            gaps.push(die.sample(&mut rng));
+            gaps.push(rng.sample(die));
         }
     }
 

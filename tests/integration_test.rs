@@ -2,7 +2,6 @@
 #[cfg(test)]
 mod test {
     use std::path::PathBuf;
-    use csv_challenge::{load_csv, replace_column, write_csv};
 
     #[test]
     fn test_csv_challenge() {

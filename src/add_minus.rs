@@ -1,7 +1,9 @@
+use std::collections::HashMap;
 use std::ops::Range;
 use std::str::FromStr;
-use rand::distributions::{Distribution, Uniform};
-use rand::{Rng, thread_rng};
+use rand::{rng, Rng};
+use rand::distr::Uniform;
+use rand::seq::{IteratorRandom, SliceRandom};
 use crate::{AddMinusOpts, OperandConfig, OperandPattern, utils};
 use crate::utils::{add_paragraph, char_len, read_from_docx, write, write_to_docx};
 
@@ -50,6 +52,159 @@ fn parse_operand_pattern(pattern: &str) -> OperandPattern {
     }
 }
 
+pub fn gen_arithmetic_to_docx_by_pattern2(args: &AddMinusOpts) {
+    let mut map_pair: HashMap<u32, Vec<(u32, u32)>> = HashMap::new();
+
+    map_pair.insert(18, vec![(18, 9)]);
+    map_pair.insert(17, vec![(17, 9), (17, 8)]);
+    map_pair.insert(16, vec![(16, 9), (16, 8), (16, 7)]);
+    map_pair.insert(15, vec![(15, 9), (15, 8), (15, 7), (15, 6)]);
+    map_pair.insert(10, vec![(10, 9), (10, 8), (10, 7), (10, 6), (10, 5), (10, 4), (10, 3), (10, 2), (10, 1)]);
+    map_pair.insert(8, vec![(8, 7), (8, 6), (8, 5), (8, 4), (8, 3), (8, 2), (8, 1)]);
+    gen_arithmetic_to_docx_by_pattern2_3_4(args, &map_pair);
+}
+pub fn gen_arithmetic_to_docx_by_pattern3(args: &AddMinusOpts) {
+    let mut map_pair: HashMap<u32, Vec<(u32, u32)>> = HashMap::new();
+
+    map_pair.insert(14, vec![(14, 9), (14, 8), (14, 7), (14, 6), (14, 5)]);
+    map_pair.insert(13, vec![(13, 9), (13, 8), (13, 7), (13, 6), (13, 5), (13, 4)]);
+    map_pair.insert(12, vec![(12, 9), (12, 8), (12, 7), (12, 6), (12, 5), (12, 4), (12, 3)]);
+    map_pair.insert(11, vec![(11, 9), (11, 8), (11, 7), (11, 6), (11, 5), (11, 4), (11, 3), (11, 2)]);
+    gen_arithmetic_to_docx_by_pattern2_3_4(args, &map_pair);
+}
+pub fn gen_arithmetic_to_docx_by_pattern4(args: &AddMinusOpts) {
+    let mut map_pair: HashMap<u32, Vec<(u32, u32)>> = HashMap::new();
+
+    map_pair.insert(9, vec![(9, 8), (9, 7), (9, 6), (9, 5), (9, 4), (9, 3), (9, 2), (9, 1)]);
+    map_pair.insert(7, vec![(7, 6), (7, 5), (7, 4), (7, 3), (7, 2), (7, 1)]);
+    map_pair.insert(6, vec![(6, 5), (6, 4), (6, 3), (6, 2), (6, 1)]);
+    map_pair.insert(5, vec![(5, 4), (5, 3), (5, 2), (5, 1)]);
+    map_pair.insert(4, vec![(4, 3), (4, 2), (4, 1)]);
+
+    gen_arithmetic_to_docx_by_pattern2_3_4(args, &map_pair);
+}
+
+pub fn gen_arithmetic_to_docx_by_pattern2_3_4(args: &AddMinusOpts, map_pair: &HashMap<u32, Vec<(u32, u32)>>) {
+    let mut doc = read_from_docx("./resources/template.docx");
+
+    let mut line = String::new();
+    let mut i = 0;
+
+    let mut keys: Vec<_> = map_pair.keys().collect();
+    keys.sort_by(|a, b| b.cmp(a));
+
+    while i < args.count {
+        let mut result_pairs: Vec<String> = Vec::new();
+        for key in &keys {
+            for &pair in map_pair.get(key).unwrap().iter() {
+                result_pairs.push(format!("{:>2} - {:<2}=", pair.0, pair.1));
+            }
+        }
+        // 打乱顺序
+        result_pairs.shuffle(&mut rand::thread_rng());
+        for pair in result_pairs.iter() {
+            line.push_str(pair);
+
+            i = i + 1;
+            if i > args.count { break }
+            // 可能多个算式组合成一行，写入docx
+            if i % args.column_per_page == 0 || i == args.count {
+                // write paragraph
+                doc = add_paragraph(doc, args.output_docx_font_size as usize, &line);
+
+                line.clear();
+            } else {
+                // 算式之间添加分隔
+                line.push_str("      ");
+            }
+        }
+    }
+    write_to_docx(doc, "./output/add-minus.docx");
+}
+
+pub fn gen_arithmetic_to_docx_by_pattern1(args: &AddMinusOpts) {
+    let mut doc = read_from_docx("./resources/template.docx");
+
+    let mut line = String::new();
+    let mut i = 0;
+    const NUMBER_PER_PAGE: u8 = 26;
+    let mut map_pair: HashMap<u32, Vec<(u32, u32)>> = HashMap::new();
+    let mut map_freq: HashMap<u32, usize> = HashMap::new();
+
+    map_pair.insert(16, vec![(9, 7), (8, 8)]);
+    map_freq.insert(16, 2);
+
+    map_pair.insert(15, vec![(9, 6), (8, 7)]);
+    map_freq.insert(15, 2);
+
+    map_pair.insert(14, vec![(9, 5), (8, 6), (7, 7)]);
+    map_freq.insert(14, 3);
+
+    map_pair.insert(13, vec![(9, 4), (8, 5), (7, 6)]);
+    map_freq.insert(13, 3);
+
+    map_pair.insert(12, vec![(9, 3), (8, 4), (7, 5), (6, 6)]);
+    map_freq.insert(12, 4);
+
+    map_pair.insert(11, vec![(9, 2), (8, 3), (7, 4), (6, 5)]);
+    map_freq.insert(11, 4);
+
+    map_pair.insert(10, vec![(9, 1), (8, 2), (7, 3), (6, 4), (5, 5)]);
+    map_freq.insert(10, 1);
+
+    map_pair.insert(9, vec![(8, 1), (7, 2), (6, 3), (5, 4)]);
+    map_freq.insert(9, 2);
+
+    map_pair.insert(8, vec![(7, 1), (6, 2), (5, 3), (4, 4)]);
+    map_freq.insert(8, 2);
+
+    map_pair.insert(7, vec![(6, 1), (5, 2), (4, 3), (4, 2), (9, 8)]);
+    map_freq.insert(7, 2);
+
+    map_pair.insert(6, vec![(5, 1), (3, 3), (4, 1), (3, 2), (9, 9)]);
+    map_freq.insert(6, 1);
+
+    let mut keys: Vec<_> = map_pair.keys().collect();
+    keys.sort_by(|a, b| b.cmp(a));
+
+    while i < args.count {
+        let mut result_pairs: Vec<String> = Vec::new();
+        for key in &keys {
+            let pairs = map_pair.get(key).unwrap();
+            let &expected_count = map_freq.get(key).unwrap();
+            let selected_pairs = pairs.iter().choose_multiple(&mut rand::thread_rng(), expected_count);
+            for &pair in selected_pairs {
+                // 随机决定前后顺序
+                let rand_bool = rand::thread_rng().gen_bool(0.5);
+                if rand_bool {
+                    result_pairs.push(format!("{:>1} + {:<1}=", pair.0, pair.1));
+                } else {
+                    result_pairs.push(format!("{:>1} + {:<1}=", pair.1, pair.0));
+                }
+            }
+        }
+        // 打乱顺序
+        result_pairs.shuffle(&mut rand::thread_rng());
+        for pair in result_pairs.iter() {
+            line.push_str(pair);
+
+            i = i + 1;
+            if i > args.count { break }
+            // 可能多个算式组合成一行，写入docx
+            if i % args.column_per_page == 0 || i == args.count {
+                // write paragraph
+                doc = add_paragraph(doc, args.output_docx_font_size as usize, &line);
+
+                line.clear();
+            } else {
+                // 算式之间添加分隔
+                line.push_str("      ");
+            }
+        }
+    }
+    write_to_docx(doc, "./output/add-minus.docx");
+}
+
 pub fn gen_arithmetic_to_docx(args: &AddMinusOpts) {
     let parsed_args = parse_args(args);
     let mut doc = read_from_docx("./resources/template.docx");
@@ -75,10 +230,10 @@ pub fn gen_arithmetic_to_docx(args: &AddMinusOpts) {
 
 // 根据指定条件或随机生成算式
 fn gen_arithmetic_expr(args: &ParsedArgs) -> String {
-    let c = args.origin.category;
-    if c == '+' {
+    let c = &args.origin.category;
+    if c.starts_with("+") {
         gen_add(args)
-    } else if c == '-' {
+    } else if c.starts_with("_") {
         gen_minus(args)
     } else /*if c == 'x'*/ {
         if rand::random() {
@@ -129,12 +284,12 @@ fn gen_operands<F: Fn((u16, u16)) -> bool>(args: &ParsedArgs, op: Op, is_valid: 
     let max = args.origin.number_max_inclusive;
     let range = min..max + 1;
 
-    let mut rng = thread_rng();
-    let die = Uniform::from(min..max+1);
+    let mut rng = rng();
+    let uniform = Uniform::new(min, max + 1).unwrap();
 
     loop {
-        let mut l = die.sample(&mut rng);
-        let mut r = die.sample(&mut rng);
+        let mut l = rng.sample(uniform);
+        let mut r = rng.sample(uniform);
         match &args.operand_config {
             OperandConfig::TwoOperand(pattern_l, pattern_r) => {
                 // L, R
@@ -187,7 +342,7 @@ fn parse_number_by_pattern(pattern: &OperandPattern, ans: u16, range: &Range<u16
         }
         OperandPattern::ConstantRange(r) => {
             //忽略ans, 指定常数范围不受min~max范围限制
-            thread_rng().gen_range(r.start..r.end)
+            rng().random_range(r.start..r.end)
         }
     }
 }
@@ -227,7 +382,7 @@ mod test{
             number_min_inclusive: 0,
             number_max_inclusive: 10,
             result_min_inclusive: 0,
-            category: '+',
+            category: "+".to_string(),
             output_docx_font_size: 56,
             operand_pattern: "*,*".to_string(),
             result_max_inclusive: 99,
@@ -243,7 +398,7 @@ mod test{
             number_min_inclusive: 0,
             number_max_inclusive: 10,
             result_min_inclusive: 0,
-            category: '+',
+            category: "+".to_string(),
             output_docx_font_size: 56,
             operand_pattern: "*,*".to_string(),
             result_max_inclusive: 99,
