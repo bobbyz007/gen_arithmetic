@@ -101,7 +101,7 @@ pub fn gen_arithmetic_to_docx_by_pattern2_3_4(args: &AddMinusOpts, map_pair: &Ha
             }
         }
         // 打乱顺序
-        result_pairs.shuffle(&mut rand::thread_rng());
+        result_pairs.shuffle(&mut rand::rng());
         for pair in result_pairs.iter() {
             line.push_str(pair);
 
@@ -172,10 +172,10 @@ pub fn gen_arithmetic_to_docx_by_pattern1(args: &AddMinusOpts) {
         for key in &keys {
             let pairs = map_pair.get(key).unwrap();
             let &expected_count = map_freq.get(key).unwrap();
-            let selected_pairs = pairs.iter().choose_multiple(&mut rand::thread_rng(), expected_count);
+            let selected_pairs = pairs.iter().choose_multiple(&mut rand::rng(), expected_count);
             for &pair in selected_pairs {
                 // 随机决定前后顺序
-                let rand_bool = rand::thread_rng().gen_bool(0.5);
+                let rand_bool = rand::rng().gen_bool(0.5);
                 if rand_bool {
                     result_pairs.push(format!("{:>1} + {:<1}=", pair.0, pair.1));
                 } else {
@@ -184,7 +184,7 @@ pub fn gen_arithmetic_to_docx_by_pattern1(args: &AddMinusOpts) {
             }
         }
         // 打乱顺序
-        result_pairs.shuffle(&mut rand::thread_rng());
+        result_pairs.shuffle(&mut rand::rng());
         for pair in result_pairs.iter() {
             line.push_str(pair);
 
@@ -326,7 +326,7 @@ fn gen_operands<F: Fn((u16, u16)) -> bool>(args: &ParsedArgs, op: Op, is_valid: 
 }
 
 fn parse_number_by_pattern(pattern: &OperandPattern, ans: u16, range: &Range<u16>) -> u16 {
-    // let ans = rand::thread_rng().gen_range(min..max + 1);
+    // let ans = rand::rng().gen_range(min..max + 1);
     match pattern {
         OperandPattern::Wildcard => { ans }
         OperandPattern::NumberWildcard(number) => {
