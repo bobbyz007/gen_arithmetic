@@ -53,33 +53,60 @@ fn parse_operand_pattern(pattern: &str) -> OperandPattern {
 }
 
 pub fn gen_arithmetic_to_docx_by_pattern2(args: &AddMinusOpts) {
+    let map_pair: HashMap<u32, Vec<(u32, u32)>> = new_hashmap_for_pattern2();
+    gen_arithmetic_to_docx_by_pattern2_3_4(args, &map_pair);
+}
+fn new_hashmap_for_pattern2() -> HashMap<u32, Vec<(u32, u32)>> {
     let mut map_pair: HashMap<u32, Vec<(u32, u32)>> = HashMap::new();
 
     map_pair.insert(18, vec![(18, 9)]);
     map_pair.insert(17, vec![(17, 9), (17, 8)]);
     map_pair.insert(16, vec![(16, 9), (16, 8), (16, 7)]);
     map_pair.insert(15, vec![(15, 9), (15, 8), (15, 7), (15, 6)]);
-    map_pair.insert(10, vec![(10, 9), (10, 8), (10, 7), (10, 6), (10, 5), (10, 4), (10, 3), (10, 2), (10, 1)]);
-    map_pair.insert(8, vec![(8, 7), (8, 6), (8, 5), (8, 4), (8, 3), (8, 2), (8, 1)]);
-    gen_arithmetic_to_docx_by_pattern2_3_4(args, &map_pair);
-}
-pub fn gen_arithmetic_to_docx_by_pattern3(args: &AddMinusOpts) {
-    let mut map_pair: HashMap<u32, Vec<(u32, u32)>> = HashMap::new();
-
     map_pair.insert(14, vec![(14, 9), (14, 8), (14, 7), (14, 6), (14, 5)]);
     map_pair.insert(13, vec![(13, 9), (13, 8), (13, 7), (13, 6), (13, 5), (13, 4)]);
     map_pair.insert(12, vec![(12, 9), (12, 8), (12, 7), (12, 6), (12, 5), (12, 4), (12, 3)]);
-    map_pair.insert(11, vec![(11, 9), (11, 8), (11, 7), (11, 6), (11, 5), (11, 4), (11, 3), (11, 2)]);
+    map_pair.insert(11, vec![(11, 9), (11, 8)]);
+    map_pair
+}
+
+pub fn gen_arithmetic_to_docx_by_pattern3(args: &AddMinusOpts) {
+    let mut map_pair: HashMap<u32, Vec<(u32, u32)>> = HashMap::new();
+    map_pair.insert(11, vec![(11, 7), (11, 6), (11, 5), (11, 4), (11, 3), (11, 2)]);
+    map_pair.insert(10, vec![(10, 9), (10, 8), (10, 7), (10, 6), (10, 5), (10, 4), (10, 3), (10, 2), (10, 1)]);
+
+    // extract 15 expressions randomly from 12~17
+    let mut map_freq: HashMap<u32, usize> = HashMap::new();
+    map_freq.insert(17, 1);
+    map_freq.insert(16, 2);
+    map_freq.insert(15, 2);
+    map_freq.insert(14, 3);
+    map_freq.insert(13, 3);
+    map_freq.insert(12, 4);
+    let mut map_patter2 = new_hashmap_for_pattern2();
+    map_patter2.retain(|k, v| map_freq.contains_key(k));
+
+    for &key in map_patter2.keys() {
+        let &pairs = &map_patter2.get(&key).unwrap();
+        let &expected_count = map_freq.get(&key).unwrap();
+        let selected_pairs = pairs.iter().choose_multiple(&mut rand::rng(), expected_count);
+        let mut vec:Vec<(u32, u32)> = Vec::new();
+        for &selected_pair in selected_pairs {
+            vec.push(selected_pair);
+        }
+        map_pair.insert(key, vec);
+    }
+
     gen_arithmetic_to_docx_by_pattern2_3_4(args, &map_pair);
 }
 pub fn gen_arithmetic_to_docx_by_pattern4(args: &AddMinusOpts) {
     let mut map_pair: HashMap<u32, Vec<(u32, u32)>> = HashMap::new();
-
     map_pair.insert(9, vec![(9, 8), (9, 7), (9, 6), (9, 5), (9, 4), (9, 3), (9, 2), (9, 1)]);
+    map_pair.insert(8, vec![(8, 7), (8, 6), (8, 5), (8, 4), (8, 3), (8, 2), (8, 1)]);
     map_pair.insert(7, vec![(7, 6), (7, 5), (7, 4), (7, 3), (7, 2), (7, 1)]);
-    map_pair.insert(6, vec![(6, 5), (6, 4), (6, 3), (6, 2), (6, 1)]);
-    map_pair.insert(5, vec![(5, 4), (5, 3), (5, 2), (5, 1)]);
-    map_pair.insert(4, vec![(4, 3), (4, 2), (4, 1)]);
+    map_pair.insert(6, vec![(6, 5), (6, 4), (6, 3), (6, 2)]);
+    map_pair.insert(5, vec![(5, 4), (5, 3), (5, 2)]);
+    map_pair.insert(4, vec![(4, 3), (4, 2)]);
 
     gen_arithmetic_to_docx_by_pattern2_3_4(args, &map_pair);
 }
@@ -131,6 +158,12 @@ pub fn gen_arithmetic_to_docx_by_pattern1(args: &AddMinusOpts) {
     let mut map_pair: HashMap<u32, Vec<(u32, u32)>> = HashMap::new();
     let mut map_freq: HashMap<u32, usize> = HashMap::new();
 
+    map_pair.insert(18, vec![(9, 9)]);
+    map_freq.insert(18, 1);
+
+    map_pair.insert(17, vec![(9, 8)]);
+    map_freq.insert(17, 1);
+
     map_pair.insert(16, vec![(9, 7), (8, 8)]);
     map_freq.insert(16, 2);
 
@@ -150,18 +183,18 @@ pub fn gen_arithmetic_to_docx_by_pattern1(args: &AddMinusOpts) {
     map_freq.insert(11, 4);
 
     map_pair.insert(10, vec![(9, 1), (8, 2), (7, 3), (6, 4), (5, 5)]);
-    map_freq.insert(10, 1);
+    map_freq.insert(10, 2);
 
     map_pair.insert(9, vec![(8, 1), (7, 2), (6, 3), (5, 4)]);
-    map_freq.insert(9, 2);
+    map_freq.insert(9, 3);
 
     map_pair.insert(8, vec![(7, 1), (6, 2), (5, 3), (4, 4)]);
     map_freq.insert(8, 2);
 
-    map_pair.insert(7, vec![(6, 1), (5, 2), (4, 3), (4, 2), (9, 8)]);
+    map_pair.insert(7, vec![(6, 1), (5, 2), (4, 3), (4, 2)]);
     map_freq.insert(7, 2);
 
-    map_pair.insert(6, vec![(5, 1), (3, 3), (4, 1), (3, 2), (9, 9)]);
+    map_pair.insert(6, vec![(5, 1), (3, 3), (4, 1), (3, 2)]);
     map_freq.insert(6, 1);
 
     let mut keys: Vec<_> = map_pair.keys().collect();

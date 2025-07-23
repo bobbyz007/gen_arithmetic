@@ -17,6 +17,7 @@ fn main() {
     let cli = Cli::parse();
     match &cli.command {
         Some(Commands::AddMinus(add_minus)) => {
+            // default 30 expressions per page
             if add_minus.category.ends_with("p1") {
                 // p1: add(result [6, 16])
                 gen_arithmetic_to_docx_by_pattern1(add_minus)
